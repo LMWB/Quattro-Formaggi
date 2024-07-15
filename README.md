@@ -15,7 +15,7 @@ One Wire Temperature Sensor Breakout Board on Arduino Shield Format and STM32 Nu
 
 Quattro Formaggi Quattro Stagioni
 
-to study some of my testing done sofar please have a look [here](/Testing/README.md)
+to study some of my testing done so far please have a look [here](/Testing/README.md)
 
 # ToDo
 - add User-LED on Arduino Shield (Nucleo LED is covered) [HW]
