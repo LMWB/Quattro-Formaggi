@@ -6,7 +6,7 @@ One Wire Temperature Sensor Breakout Board on Arduino Shield Format and STM32 Nu
 - designed for DS18B20 Temperature Sensor but any 1-Wire Sensor / Actor would do (minor Software adjustments required)
 - Industrial ready CAN-Bus interface
 - Industrial ready Modbus interface will come soon
-- Arduino-Shield layout will fit on several Dev-Boards including all Nucleo-64 bsoards and Arduino-UNO boards
+- Arduino-Shield layout will fit on several Dev-Boards including all Nucleo-64 boards and Arduino-UNO boards
 
 1Wire Search Algorithm and Driver Stage are basically taken from MAXIM Datasheet and Microship App-Notes.
 
