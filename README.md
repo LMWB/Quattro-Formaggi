@@ -12,6 +12,7 @@ One Wire Temperature Sensor Breakout Board on Arduino Shield Format and STM32 Nu
 1Wire Search Algorithm and Driver Stage are basically taken from MAXIM Datasheet and Microship App-Notes.
 
 ![1Wire Arduino Shield](/Images/DS18b20_Arduino_Shield.png)
+![1Wire Arduino Shield with Nucleo](/Images/DS18b20_Arduino_Shield2.png)
 
 Quattro Formaggi Quattro Stagioni
 
