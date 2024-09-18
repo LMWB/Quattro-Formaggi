@@ -50,6 +50,8 @@ void ds18b20_demo_multi_teach( void )
 void ds18b20_demo_multi( void ) {
   uint8_t dummy = 0;
   uint8_t result = 0; /* 0=fail, 1=good */
+  static int32_t temperature[4] = {0};
+  uint32_t tick, tickNow = 0;
 
   OWSetSpeed( 1 );
   my_printf( "\nStart 1-Wire Search Algorithm ... \n" );
@@ -153,6 +155,7 @@ void ds18b20_demo_multi( void ) {
 
         if ( result ) {
           my_printf( "DS18B20 No %i has Temp of %d \n", (i + 1), sensor_1.temperature );
+          temperature[i] = sensor_1.temperature;
         } else {
           my_printf( "Device not of type DS18B20 \n" );
         }
@@ -160,6 +163,18 @@ void ds18b20_demo_multi( void ) {
         /** end of looping through local buffer **/
       }
     }
+
+	tick = tickNow;
+	my_printf(	"tick,%d,"
+				"DS18B20_1,%d,GradC,"
+				"DS18B20_2,%d,GradC,"
+				"DS18B20_3,%d,GradC,"
+				"DS18B20_4,%d,GradC\n",
+				tickNow,
+				temperature[0],
+				temperature[1],
+				temperature[2],
+				temperature[3]);
 
     my_printf( "\n" );
     HAL_GPIO_TogglePin( LD2_GPIO_Port, LD2_Pin );
