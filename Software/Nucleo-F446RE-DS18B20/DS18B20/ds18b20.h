@@ -80,7 +80,22 @@ extern DS18B20_t sensor_1;
 
 uint8_t ds18b20_scan_for_devices_on_bus(void);
 
-uint8_t ds18b20_get_devices_serial_number(uint8_t n, uint8_t* array);
+/*
+ * This function makes shure that we access a DS18B20 Temperature Sensor
+ * check one specific device in ALL_DEVICESS memory for DS18B20 Family Code
+ *
+ */
+uint8_t ds18b20_check_device_familiy_code( DS18B20_t *sensor );
+
+uint8_t ds18b20_get_devices_serial_number(uint8_t n, DS18B20_t* sensor);
+
+uint8_t ds18b20_send_start_conversion_to_all_devices(void);
+
+uint8_t ds18b20_check_conversion_finished(void);
+
+uint8_t ds18b20_read_temperature_from_scratchpad(uint8_t n, int32_t *temperature_grad_celcius);
+
+
 
 void ds18b20_demo( void );
 
@@ -96,12 +111,7 @@ void ds18b20_demo_multi( void );
  * */
 void ds18b20_demo_multi_teach( void );
 
-/*
- * This function makes shure that we access a DS18B20 Temperature Sensor
- * check one specific device in ALL_DEVICESS memory for DS18B20 Family Code
- *
- */
-uint8_t ds18b20_check_device_familiy_code( DS18B20_t *sensor );
+
 
 /*
  * The master device must issue an appropriate ROM command before

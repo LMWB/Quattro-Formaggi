@@ -15,6 +15,10 @@ DS18B20_t sensor_1 = { 0 };
 static uint8_t NO_OF_DEVICES_ON_BUS = 0;
 static unsigned char ALL_DEVICESS[DS18B20_MAX_DEVICES_ON_BUS][8]; // maximum allowed DS18B20 1Wire devices on the bus
 
+static uint8_t ds18b20_read_scratchpad(DS18B20_t *sensor);
+
+
+
 /* Public / Exported Functions */
 void ds18b20_demo( void ) {
   uint8_t dummy = 0;
@@ -46,16 +50,16 @@ void ds18b20_demo_multi_teach( void )
   ;;;
 }
 
-uint8_t ds18b20_get_devices_serial_number(uint8_t n, uint8_t* array){
+uint8_t ds18b20_get_devices_serial_number(uint8_t n, DS18B20_t* sensor){
 	if(n < DS18B20_MAX_DEVICES_ON_BUS){
-		array[7] = ALL_DEVICESS[n][7];
-		array[6] = ALL_DEVICESS[n][6];
-		array[5] = ALL_DEVICESS[n][5];
-		array[4] = ALL_DEVICESS[n][4];
-		array[3] = ALL_DEVICESS[n][3];
-		array[2] = ALL_DEVICESS[n][2];
-		array[1] = ALL_DEVICESS[n][1];
-		array[0] = ALL_DEVICESS[n][0];
+		sensor->familycode = ALL_DEVICESS[n][0];
+		sensor->ID[0] = ALL_DEVICESS[n][1];
+		sensor->ID[1] = ALL_DEVICESS[n][2];
+		sensor->ID[2] = ALL_DEVICESS[n][3];
+		sensor->ID[3] = ALL_DEVICESS[n][4];
+		sensor->ID[4] = ALL_DEVICESS[n][5];
+		sensor->ID[5] = ALL_DEVICESS[n][6];
+		sensor->CRC_Byte = ALL_DEVICESS[n][7];
 		return 1;
 	}
 	return 0;
@@ -69,14 +73,87 @@ uint8_t ds18b20_scan_for_devices_on_bus(void) {
 	while (rslt && (number_of_devices_found < DS18B20_MAX_DEVICES_ON_BUS)) {
 		// save this device on static variable
 		memcpy(ALL_DEVICESS[number_of_devices_found], OWROM_NO, sizeof(OWROM_NO));
+
+		// check device family code, make sure it is a ds18b20 temperature sensor
+		DS18B20_t ds18b20 = { 0 };
+		ds18b20_get_devices_serial_number(number_of_devices_found, &ds18b20);
+		if (ds18b20_check_device_familiy_code( &ds18b20 ))
+		{
+			number_of_devices_found++;
+		}
 		// search next device on that may be present on bus
-		number_of_devices_found++;
 		rslt = OWNext();
 	}
 
 	// set private variable
 	NO_OF_DEVICES_ON_BUS = number_of_devices_found;
 	return number_of_devices_found;
+}
+
+/*
+ * The master can use this command to address all devices
+ * on the bus simultaneously without sending out any ROM
+ * code information. For example, the master can make all
+ * DS18B20s on the bus perform simultaneous temperature
+ * conversions by issuing a Skip ROM command followed by
+ * a Convert T [44h] command
+ */
+uint8_t ds18b20_send_start_conversion_to_all_devices(void) {
+	if (OWTouchReset()) {
+		OWWriteByte(DS18B20_ROM_COMMAND_Skip);
+		OWWriteByte(DS18B20_FUCTION_COMMAND_Convert_T);
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t ds18b20_check_conversion_finished(void) {
+	return OWReadBit( );
+}
+
+uint8_t ds18b20_read_scratchpad(DS18B20_t *sensor) {
+	OWWriteByte(DS18B20_ROM_COMMAND_Match);
+	OWWriteByte(sensor->familycode);
+	OWWriteByte(sensor->ID[0]);
+	OWWriteByte(sensor->ID[1]);
+	OWWriteByte(sensor->ID[2]);
+	OWWriteByte(sensor->ID[3]);
+	OWWriteByte(sensor->ID[4]);
+	OWWriteByte(sensor->ID[5]);
+	OWWriteByte(sensor->CRC_Byte);
+	OWWriteByte(DS18B20_FUCTION_COMMAND_ReadScratchpad);
+
+	/* read scratchpad */
+	sensor->temperature_buffer[0] = OWReadByte();
+	sensor->temperature_buffer[1] = OWReadByte();
+	/* convert raw binary to decrease celsius */
+	sensor->temperature_raw = (sensor->temperature_buffer[1] << 8) | sensor->temperature_buffer[0];
+	sensor->temperature = sensor->temperature_raw * 1000L / 16L;
+	return 1;
+}
+
+/* Read Scratchpad upper 2 Bytes (temperature Byte0 LSB & Byte1 MSB)
+ * The match ROM command followed by a 64-bit ROM
+ * code sequence allows the bus master to address a
+ * specific slave device on a multidrop or single-drop bus.
+ * Only the slave that exactly matches the 64-bit ROM code
+ * sequence will respond to the function command issued
+ * by the master; all other slaves on the bus will wait for a
+ * reset pulse.
+ */
+uint8_t ds18b20_read_temperature_from_scratchpad(uint8_t n, int32_t *temperature_grad_celcius) {
+	if (n < DS18B20_MAX_DEVICES_ON_BUS) {
+		if (OWTouchReset()) {
+			DS18B20_t sensor;
+			ds18b20_get_devices_serial_number(n, &sensor);
+			ds18b20_read_scratchpad(&sensor);
+
+			// Return result as call by reference
+			*temperature_grad_celcius = sensor.temperature;
+			return 1;
+		}
+	}
+	return 0;
 }
 
 void ds18b20_demo_multi( void ) {
@@ -195,8 +272,6 @@ void ds18b20_demo_multi( void ) {
         /** end of looping through local buffer **/
       }
     }
-
-	tick = tickNow;
 	my_printf(	"tick,%d,"
 				"DS18B20_1,%d,GradC,"
 				"DS18B20_2,%d,GradC,"
@@ -207,7 +282,6 @@ void ds18b20_demo_multi( void ) {
 				temperature[1],
 				temperature[2],
 				temperature[3]);
-
     my_printf( "\n" );
     HAL_GPIO_TogglePin( LD2_GPIO_Port, LD2_Pin );
     HAL_Delay( 300 );
@@ -224,6 +298,7 @@ uint8_t ds18b20_check_device_familiy_code( DS18B20_t *sensor ) {
   }
   return result;
 }
+
 
 uint8_t ds18b20_read_temperature_single( DS18B20_t *sensor ) {
   uint8_t dummy = 0;
