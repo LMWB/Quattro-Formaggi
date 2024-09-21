@@ -6,7 +6,6 @@
  */
 
 #include "ds18b20.h"
-
 #include <stdbool.h>
 
 /* Public / Exported Variables */
@@ -45,6 +44,39 @@ void ds18b20_demo( void ) {
 void ds18b20_demo_multi_teach( void )
 {
   ;;;
+}
+
+uint8_t ds18b20_get_devices_serial_number(uint8_t n, uint8_t* array){
+	if(n < DS18B20_MAX_DEVICES_ON_BUS){
+		array[7] = ALL_DEVICESS[n][7];
+		array[6] = ALL_DEVICESS[n][6];
+		array[5] = ALL_DEVICESS[n][5];
+		array[4] = ALL_DEVICESS[n][4];
+		array[3] = ALL_DEVICESS[n][3];
+		array[2] = ALL_DEVICESS[n][2];
+		array[1] = ALL_DEVICESS[n][1];
+		array[0] = ALL_DEVICESS[n][0];
+		return 1;
+	}
+	return 0;
+}
+
+uint8_t ds18b20_scan_for_devices_on_bus(void) {
+	uint8_t number_of_devices_found = 0;
+
+	OWSetSpeed(1);
+	bool rslt = OWFirst();
+	while (rslt && (number_of_devices_found < DS18B20_MAX_DEVICES_ON_BUS)) {
+		// save this device on static variable
+		memcpy(ALL_DEVICESS[number_of_devices_found], OWROM_NO, sizeof(OWROM_NO));
+		// search next device on that may be present on bus
+		number_of_devices_found++;
+		rslt = OWNext();
+	}
+
+	// set private variable
+	NO_OF_DEVICES_ON_BUS = number_of_devices_found;
+	return number_of_devices_found;
 }
 
 void ds18b20_demo_multi( void ) {

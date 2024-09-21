@@ -77,6 +77,11 @@ typedef struct {
 /* DS18B20 temperature One Wire Sensor*/
 extern DS18B20_t sensor_1;
 
+
+uint8_t ds18b20_scan_for_devices_on_bus(void);
+
+uint8_t ds18b20_get_devices_serial_number(uint8_t n, uint8_t* array);
+
 void ds18b20_demo( void );
 
 void ds18b20_demo_multi( void );

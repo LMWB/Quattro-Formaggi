@@ -120,6 +120,22 @@ int main(void)
 
   HAL_Delay(300);
   my_printf("DS18B20 One Wire Temperature Sensor Demo\n");
+  my_printf("\nStart 1-Wire Search Algorithm ... \n");
+  uint8_t n = ds18b20_scan_for_devices_on_bus();
+  my_printf("\nSummary: Found %d Devices on the 1-Wire Bus\n", n);
+
+	for (uint8_t i = 0; i < n; i++) {
+		uint8_t device_serial_number[8];
+		if (ds18b20_get_devices_serial_number(i, device_serial_number)) {
+
+			my_printf("..Found Device with SerNo: %d %d %d %d %d %d %d %d\n",
+					device_serial_number[7], device_serial_number[6],
+					device_serial_number[5], device_serial_number[4],
+					device_serial_number[3], device_serial_number[2],
+					device_serial_number[1], device_serial_number[0]);
+		}
+	}
+
 
   while (1)
   {
@@ -128,7 +144,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
     /* two ore more 1Wire-Device on the bus! */
-    ds18b20_demo_multi();
+    //ds18b20_demo_multi();
 
     /* one single 1Wire-Device on the bus only! */
     //ds18b20_demo();
