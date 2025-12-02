@@ -154,6 +154,7 @@ int main(void) {
 			ds18b20_send_start_conversion_to_all_devices();
 		}
 
+		// quick and dirty timing scheduler for out put results to record on serial terminal
 		if ((tickNow - tick) >= 5000) {
 			tick = tickNow;
 			my_printf("tick,%d,"
