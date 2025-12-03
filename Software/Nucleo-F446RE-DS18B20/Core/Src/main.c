@@ -167,7 +167,7 @@ int main(void) {
 					"\"T1\": %2.2f,"
 					"\"T2\": %2.2f,"
 					"\"T3\": %2.2f,"
-					"\"T4\": %2.2f}", f1, f2, f3, f4);
+					"\"T4\": %2.2f}\r\n", f1, f2, f3, f4);
 		}
 
 		/* two ore more 1Wire-Device on the bus! */
