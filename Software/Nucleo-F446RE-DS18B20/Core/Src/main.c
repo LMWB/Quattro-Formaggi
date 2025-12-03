@@ -157,11 +157,17 @@ int main(void) {
 		// quick and dirty timing scheduler for out put results to record on serial terminal
 		if ((tickNow - tick) >= 5000) {
 			tick = tickNow;
-			my_printf("tick,%d,"
-					"DS18B20_1,%d,GradC,"
-					"DS18B20_2,%d,GradC,"
-					"DS18B20_3,%d,GradC,"
-					"DS18B20_4,%d,GradC\n", tickNow, t1, t2, t3, t4);
+
+			float f1,f2,f3,f4;
+			f1 = t1/1000.0;
+			f2 = t2/1000.0;
+			f3 = t3/1000.0;
+			f4 = t4/1000.0;
+			my_printf("{"
+					"\"T1\": %2.2f,"
+					"\"T2\": %2.2f,"
+					"\"T3\": %2.2f,"
+					"\"T4\": %2.2f}\r\n", f1, f2, f3, f4);
 		}
 
 		/* two ore more 1Wire-Device on the bus! */
